@@ -1,5 +1,3 @@
-HTML
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -8,7 +6,7 @@ HTML
 
 <meta charset="UTF-8" />
 
-<title>Floating Screensaver</title>
+<title>Clock</title>
 
 <style>
 
@@ -24,9 +22,17 @@ HTML
 
   }
 
-  canvas {
+  canvas { display: block; }
 
-    display: block;
+  #ui {
+
+    position: fixed;
+
+    top: 10px;
+
+    left: 10px;
+
+    z-index: 10;
 
   }
 
@@ -40,7 +46,7 @@ HTML
 
     opacity: 0;
 
-    transition: opacity 1s ease;
+    transition: opacity 1.5s ease;
 
     pointer-events: none;
 
@@ -52,21 +58,29 @@ HTML
 
 <body>
 
+<div id="ui">
+
+  <input type="color" id="colorPicker" value="#ffffff">
+
+</div>
+
 <canvas id="c"></canvas>
 
 <div id="dim"></div>
 
 <script>
 
-// ✅ this now runs AFTER DOM exists
-
-alert("JS IS RUNNING");
-
 const canvas = document.getElementById("c");
 
 const ctx = canvas.getContext("2d");
 
 const dim = document.getElementById("dim");
+
+const picker = document.getElementById("colorPicker");
+
+let color = picker.value;
+
+picker.addEventListener("input", e => color = e.target.value);
 
 function resize() {
 
@@ -80,55 +94,31 @@ window.addEventListener("resize", resize);
 
 resize();
 
-const text = "FLOATING TEXT";
-
-const items = text.split(" ").map(t => ({
-
-  t,
-
-  x: Math.random() * window.innerWidth,
-
-  y: Math.random() * window.innerHeight,
-
-  vx: (Math.random() * 4 + 2),
-
-  vy: (Math.random() * 4 + 2),
-
-  size: 40
-
-}));
-
-function animate() {
+function draw() {
 
   ctx.fillStyle = "black";
 
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "white";
+  const now = new Date();
 
-  for (let i of items) {
+  const time = now.toLocaleTimeString();
 
-    ctx.font = `${i.size}px Arial`;
+  ctx.fillStyle = color;
 
-    ctx.fillText(i.t, i.x, i.y);
+  ctx.font = "80px Arial";
 
-    i.x += i.vx;
+  ctx.textAlign = "center";
 
-    i.y += i.vy;
+  ctx.textBaseline = "middle";
 
-    if (i.x > canvas.width || i.x < 0) i.vx *= -1;
+  ctx.fillText(time, canvas.width/2, canvas.height/2);
 
-    if (i.y > canvas.height || i.y < 0) i.vy *= -1;
-
-  }
-
-  requestAnimationFrame(animate);
+  requestAnimationFrame(draw);
 
 }
 
-animate();
-
-// dim logic
+draw();
 
 let timer;
 
