@@ -1,271 +1,113 @@
-<!DOCTYPE html>
+<script>
 
-<html>
+const clock = document.getElementById("clock");
 
-<head>
+const colorPicker = document.getElementById("colorPicker");
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+const brightness = document.getElementById("brightness");
 
-  <title>Night Clock</title>
+const controls = document.querySelector(".controls");
 
-  <style>
+const body = document.body;
 
-    html, body {
+let dimTimeout = null;
 
-      margin: 0;
+let hideTimeout = null;
 
-      height: 100%;
+// Clock update
 
-      background: #000;
+function updateClock() {
 
-      overflow: hidden;
+  const now = new Date();
 
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+  const h = String(now.getHours()).padStart(2, "0");
 
-    }
+  const m = String(now.getMinutes()).padStart(2, "0");
 
-    body {
+  clock.textContent = `${h}:${m}`;
 
-      display: flex;
+}
 
-      justify-content: center;
+// Neon style update
 
-      align-items: center;
+function updateStyle() {
 
-      transition: background 1s ease;
+  const color = colorPicker.value;
 
-    }
+  const bright = brightness.value;
 
-    /* StandBy-style layout */
+  clock.style.color = color;
 
-    .container {
+  clock.style.textShadow = `0 0 25px ${color}`;
 
-      text-align: center;
+  clock.style.opacity = bright;
 
-      transform: translateY(-2vh);
+}
 
-    }
+// Show controls briefly
 
-    #clock {
+function showControls() {
 
-      font-size: clamp(90px, 18vw, 180px);
+  controls.classList.remove("hidden");
 
-      font-weight: 300;
+  clearTimeout(hideTimeout);
 
-      letter-spacing: 0.02em;
+  hideTimeout = setTimeout(() => {
 
-      color: #00ffcc;
+    controls.classList.add("hidden");
 
-      text-shadow: 0 0 18px rgba(0, 255, 204, 0.35);
+  }, 2500);
 
-      transition: all 0.5s ease;
+}
 
-    }
+// Dim quickly after 5 seconds of no interaction
 
-    .controls {
+function resetDimTimer() {
 
-      margin-top: 30px;
+  body.classList.remove("dim");
 
-      display: flex;
+  clearTimeout(dimTimeout);
 
-      flex-direction: column;
+  dimTimeout = setTimeout(() => {
 
-      gap: 12px;
+    body.classList.add("dim");
 
-      color: white;
+  }, 5000); // 👈 YOUR REQUEST: 5 seconds
 
-      font-size: 13px;
+}
 
-      opacity: 1;
+// Single interaction handler
 
-      transition: opacity 0.6s ease;
+function onInteraction() {
 
-      align-items: center;
+  showControls();
 
-    }
+  resetDimTimer();
 
-    /* Hidden controls (StandBy feel) */
+}
 
-    .hidden {
+// iPad-safe input handling
 
-      opacity: 0;
+document.addEventListener("pointerdown", onInteraction, { passive: true });
 
-      pointer-events: none;
+document.addEventListener("touchstart", onInteraction, { passive: true });
 
-    }
+// UI inputs
 
-    input[type="range"] {
+colorPicker.addEventListener("input", updateStyle);
 
-      width: 220px;
+brightness.addEventListener("input", updateStyle);
 
-      accent-color: #00ffcc;
+// Init
 
-    }
+setInterval(updateClock, 1000);
 
-    input[type="color"] {
+updateClock();
 
-      width: 60px;
+updateStyle();
 
-      height: 34px;
+showControls();
 
-      border: none;
+resetDimTimer();
 
-      background: none;
-
-    }
-
-    label {
-
-      opacity: 0.7;
-
-    }
-
-    /* Dim mode */
-
-    .dim #clock {
-
-      opacity: 0.25;
-
-      text-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
-
-    }
-
-    .dim {
-
-      background: #000;
-
-    }
-
-  </style>
-
-</head>
-
-<body>
-
-  <div class="container">
-
-    <div id="clock"></div>
-
-    <div class="controls">
-
-      <label>Colour</label>
-
-      <input type="color" id="colorPicker" value="#00ffcc">
-
-      <label>Brightness</label>
-
-      <input type="range" id="brightness" min="0.1" max="1" step="0.05" value="1">
-
-    </div>
-
-  </div>
-
-  <script>
-
-    const clock = document.getElementById("clock");
-
-    const colorPicker = document.getElementById("colorPicker");
-
-    const brightness = document.getElementById("brightness");
-
-    const controls = document.querySelector(".controls");
-
-    const body = document.body;
-
-    let hideTimeout;
-
-    let dimTimeout;
-
-    function updateClock() {
-
-      const now = new Date();
-
-      const h = String(now.getHours()).padStart(2, "0");
-
-      const m = String(now.getMinutes()).padStart(2, "0");
-
-      clock.textContent = `${h}:${m}`;
-
-    }
-
-    function updateStyle() {
-
-      const color = colorPicker.value;
-
-      const bright = brightness.value;
-
-      clock.style.color = color;
-
-      clock.style.textShadow = `0 0 18px ${color}`;
-
-      clock.style.opacity = bright;
-
-    }
-
-    // StandBy-style control reveal
-
-    function showControls() {
-
-      controls.classList.remove("hidden");
-
-      clearTimeout(hideTimeout);
-
-      hideTimeout = setTimeout(() => {
-
-        controls.classList.add("hidden");
-
-      }, 2500);
-
-    }
-
-    // Dim after inactivity
-
-    function resetDimTimer() {
-
-      body.classList.remove("dim");
-
-      clearTimeout(dimTimeout);
-
-      dimTimeout = setTimeout(() => {
-
-        body.classList.add("dim");
-
-      }, 20000);
-
-    }
-
-    function interaction() {
-
-      showControls();
-
-      resetDimTimer();
-
-    }
-
-    // iPad-safe input handling
-
-    document.addEventListener("pointerdown", interaction, { passive: true });
-
-    document.addEventListener("touchstart", interaction, { passive: true });
-
-    colorPicker.addEventListener("input", updateStyle);
-
-    brightness.addEventListener("input", updateStyle);
-
-    // init
-
-    setInterval(updateClock, 1000);
-
-    updateClock();
-
-    updateStyle();
-
-    showControls();
-
-    resetDimTimer();
-
-  </script>
-
-</body>
-
-</html>
+</script>
