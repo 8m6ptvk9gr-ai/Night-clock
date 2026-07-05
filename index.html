@@ -28,11 +28,13 @@
 
       overflow: hidden;
 
+      transition: background 1s ease;
+
     }
 
     .container {
 
-      text-align: center; 
+      text-align: center;
 
     }
 
@@ -45,6 +47,8 @@
       text-shadow: 0 0 25px #00ffcc;
 
       margin-bottom: 40px;
+
+      transition: all 0.5s ease;
 
     }
 
@@ -59,6 +63,34 @@
       color: white;
 
       font-size: 14px;
+
+      transition: opacity 0.8s ease;
+
+    }
+
+    /* Hidden state (bedside mode) */
+
+    .hidden {
+
+      opacity: 0;
+
+      pointer-events: none;
+
+    }
+
+    /* Dim mode (auto night behaviour) */
+
+    .dim #clock {
+
+      opacity: 0.35;
+
+      text-shadow: 0 0 10px currentColor;
+
+    }
+
+    .dim body {
+
+      background: #050505;
 
     }
 
@@ -86,7 +118,7 @@
 
       <label>Brightness</label>
 
-      <input type="range" id="brightness" min="0.2" max="1" step="0.05" value="1">
+      <input type="range" id="brightness" min="0.1" max="1" step="0.05" value="1">
 
     </div>
 
@@ -99,6 +131,14 @@
     const colorPicker = document.getElementById("colorPicker");
 
     const brightness = document.getElementById("brightness");
+
+    const controls = document.querySelector(".controls");
+
+    const body = document.body;
+
+    let hideTimeout;
+
+    let dimTimeout;
 
     function updateClock() {
 
@@ -126,15 +166,77 @@
 
     }
 
+    // 1. Tap = toggle controls (bedside mode)
+
+    function showControls() {
+
+      controls.classList.remove("hidden");
+
+      clearTimeout(hideTimeout);
+
+      hideTimeout = setTimeout(() => {
+
+        controls.classList.add("hidden");
+
+      }, 2500);
+
+    }
+
+    // 2. Auto-dim after inactivity
+
+    function startDimTimer() {
+
+      clearTimeout(dimTimeout);
+
+      dimTimeout = setTimeout(() => {
+
+        body.classList.add("dim");
+
+      }, 20000); // 20 seconds
+
+    }
+
+    function resetDim() {
+
+      body.classList.remove("dim");
+
+      startDimTimer();
+
+    }
+
+    // User interaction resets everything
+
+    document.body.addEventListener("click", () => {
+
+      showControls();
+
+      resetDim();
+
+    });
+
+    document.body.addEventListener("touchstart", () => {
+
+      showControls();
+
+      resetDim();
+
+    });
+
     colorPicker.addEventListener("input", updateStyle);
 
     brightness.addEventListener("input", updateStyle);
+
+    // Init
 
     setInterval(updateClock, 1000);
 
     updateClock();
 
     updateStyle();
+
+    showControls();
+
+    startDimTimer();
 
   </script>
 
