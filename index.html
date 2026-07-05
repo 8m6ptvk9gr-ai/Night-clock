@@ -1,107 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Night Clock</title>
+
+<style>
+
+html, body{
+
+    margin:0;
+
+    width:100%;
+
+    height:100%;
+
+    overflow:hidden;
+
+    background:black;
+
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+
+}
+
+body{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    transition:opacity 1s;
+
+}
+
+.container{
+
+    text-align:center;
+
+}
+
+#clock{
+
+    font-size:min(28vw,180px);
+
+    font-weight:200;
+
+    color:#00ffcc;
+
+    text-shadow:0 0 25px #00ffcc;
+
+    transition:opacity 1s,text-shadow 1s,color .5s;
+
+}
+
+.controls{
+
+    margin-top:40px;
+
+    color:white;
+
+    transition:opacity .6s;
+
+}
+
+.hidden{
+
+    opacity:0;
+
+    pointer-events:none;
+
+}
+
+input[type=range]{
+
+    width:220px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="clock"></div>
+
+<div class="controls">
+
+<p>Colour</p>
+
+<input
+
+type="color"
+
+id="colorPicker"
+
+value="#00ffcc">
+
+<p>Brightness</p>
+
+<input
+
+type="range"
+
+id="brightness"
+
+min="0.2"
+
+max="1"
+
+step="0.05"
+
+value="1">
+
+</div>
+
+</div>
+
 <script>
 
-document.addEventListener("DOMContentLoaded", () => {
+const clock=document.getElementById("clock");
 
-  const clock = document.getElementById("clock");
+const colour=document.getElementById("colorPicker");
 
-  const colorPicker = document.getElementById("colorPicker");
+const brightness=document.getElementById("brightness");
 
-  const brightness = document.getElementById("brightness");
+const controls=document.querySelector(".controls");
 
-  const controls = document.querySelector(".controls");
+let hideTimer;
 
-  if (!clock || !colorPicker || !brightness || !controls) {
+let dimTimer;
 
-    console.error("Missing required elements in HTML");
+function updateClock(){
 
-    return;
+const now=new Date();
 
-  }
+const h=String(now.getHours()).padStart(2,"0");
 
-  let dimTimeout;
+const m=String(now.getMinutes()).padStart(2,"0");
 
-  let hideTimeout;
+clock.textContent=`${h}:${m}`;
 
-  function updateClock() {
+}
 
-    const now = new Date();
+function applyStyle(){
 
-    const h = String(now.getHours()).padStart(2, "0");
+clock.style.color=colour.value;
 
-    const m = String(now.getMinutes()).padStart(2, "0");
+clock.style.textShadow=`0 0 25px ${colour.value}`;
 
-    clock.textContent = `${h}:${m}`;
+clock.style.opacity=brightness.value;
 
-  }
+}
 
-  function updateStyle() {
+function showControls(){
 
-    const color = colorPicker.value;
+controls.classList.remove("hidden");
 
-    const bright = brightness.value;
+clearTimeout(hideTimer);
 
-    clock.style.color = color;
+hideTimer=setTimeout(()=>{
 
-    clock.style.textShadow = `0 0 25px ${color}`;
+controls.classList.add("hidden");
 
-    clock.style.opacity = bright;
+},2500);
 
-  }
+}
 
-  function showControls() {
+function dimClock(){
 
-    controls.classList.remove("hidden");
+clock.style.opacity=0.18;
 
-    clearTimeout(hideTimeout);
+}
 
-    hideTimeout = setTimeout(() => {
+function wakeClock(){
 
-      controls.classList.add("hidden");
+applyStyle();
 
-    }, 2500);
+showControls();
 
-  }
+clearTimeout(dimTimer);
 
-  function resetDimTimer() {
+dimTimer=setTimeout(dimClock,5000);
 
-    document.body.classList.remove("dim");
+}
 
-    clearTimeout(dimTimeout);
+colour.addEventListener("input",applyStyle);
 
-    dimTimeout = setTimeout(() => {
+brightness.addEventListener("input",applyStyle);
 
-      document.body.classList.add("dim");
+document.addEventListener("pointerdown",wakeClock);
 
-    }, 5000);
+setInterval(updateClock,1000);
 
-  }
+updateClock();
 
-  function interact() {
+applyStyle();
 
-    showControls();
-
-    resetDimTimer();
-
-  }
-
-  document.addEventListener("pointerdown", interact, { passive: true });
-
-  document.addEventListener("touchstart", interact, { passive: true });
-
-  colorPicker.addEventListener("input", updateStyle);
-
-  brightness.addEventListener("input", updateStyle);
-
-  setInterval(updateClock, 1000);
-
-  updateClock();
-
-  updateStyle();
-
-  showControls();
-
-  resetDimTimer();
-
-});
+wakeClock();
 
 </script>
+
+</body>
+
+</html>
