@@ -8,7 +8,7 @@ HTML
 
 <meta charset="UTF-8" />
 
-<title>Neon Moving Clock</title>
+<title>Neon Clock</title>
 
 <style>
 
@@ -30,7 +30,7 @@ canvas {
 
 }
 
-/* UI */
+/* UI container */
 
 #ui {
 
@@ -40,11 +40,25 @@ canvas {
 
   left: 10px;
 
-  z-index: 10;
+  z-index: 20;
+
+  opacity: 1;
+
+  transition: opacity 0.5s ease;
 
 }
 
-/* Dim overlay */
+/* hidden state */
+
+#ui.hidden {
+
+  opacity: 0;
+
+  pointer-events: none;
+
+}
+
+/* dim overlay */
 
 #dim {
 
@@ -86,11 +100,15 @@ const ctx = canvas.getContext("2d");
 
 const dim = document.getElementById("dim");
 
+const ui = document.getElementById("ui");
+
 const picker = document.getElementById("colorPicker");
 
 let color = picker.value;
 
 picker.addEventListener("input", e => color = e.target.value);
+
+/* ---------------- SIZE ---------------- */
 
 function resize() {
 
@@ -114,7 +132,7 @@ let vx = 2.5;
 
 let vy = 2;
 
-function drawGlowText(text, x, y, color) {
+function drawGlow(text, x, y, color) {
 
   ctx.shadowColor = color;
 
@@ -142,9 +160,7 @@ function animate() {
 
   ctx.textBaseline = "top";
 
-  // glow neon effect
-
-  drawGlowText(time, x, y, color);
+  drawGlow(time, x, y, color);
 
   const width = ctx.measureText(time).width;
 
@@ -166,15 +182,15 @@ animate();
 
 /* ---------------- DIM AFTER 5 SECONDS ---------------- */
 
-let timer;
+let dimTimer;
 
-function resetIdle() {
+function resetDim() {
 
   dim.style.opacity = 0;
 
-  clearTimeout(timer);
+  clearTimeout(dimTimer);
 
-  timer = setTimeout(() => {
+  dimTimer = setTimeout(() => {
 
     dim.style.opacity = 0.9;
 
@@ -182,13 +198,41 @@ function resetIdle() {
 
 }
 
+/* ---------------- UI AUTO-HIDE ---------------- */
+
+let uiTimer;
+
+function showUI() {
+
+  ui.classList.remove("hidden");
+
+  clearTimeout(uiTimer);
+
+  uiTimer = setTimeout(() => {
+
+    ui.classList.add("hidden");
+
+  }, 3000);
+
+}
+
+/* ---------------- USER ACTIVITY ---------------- */
+
+function activity() {
+
+  resetDim();
+
+  showUI();
+
+}
+
 ["mousemove","keydown","touchstart"].forEach(e =>
 
-  window.addEventListener(e, resetIdle)
+  window.addEventListener(e, activity)
 
 );
 
-resetIdle();
+activity();
 
 </script>
 
