@@ -8,7 +8,7 @@ HTML
 
 <meta charset="UTF-8" />
 
-<title>Dim Screensaver</title>
+<title>Working Floating Screensaver</title>
 
 <style>
 
@@ -30,25 +30,17 @@ HTML
 
   }
 
-  /* 🔴 dim overlay */
-
   #dim {
 
     position: absolute;
 
-    top: 0;
-
-    left: 0;
-
-    width: 100%;
-
-    height: 100%;
+    inset: 0;
 
     background: black;
 
     opacity: 0;
 
-    transition: opacity 1.5s ease;
+    transition: opacity 1s ease;
 
     pointer-events: none;
 
@@ -60,13 +52,13 @@ HTML
 
 <body>
 
-<canvas id="screen"></canvas>
+<canvas id="c"></canvas>
 
 <div id="dim"></div>
 
 <script>
 
-const canvas = document.getElementById("screen");
+const canvas = document.getElementById("c");
 
 const ctx = canvas.getContext("2d");
 
@@ -84,25 +76,29 @@ window.addEventListener("resize", resize);
 
 resize();
 
-const message = "SCREENSAVER TEXT";
+// 🔥 BIG obvious motion so you can SEE it working
 
-const words = message.split(" ").map(word => ({
+const text = "FLOATING TEXT";
 
-  text: word,
+const items = text.split(" ").map(t => ({
+
+  t,
 
   x: Math.random() * window.innerWidth,
 
   y: Math.random() * window.innerHeight,
 
-  vx: (Math.random() - 0.5) * 2,
+  vx: (Math.random() * 4 + 2),   // 👈 FAST movement
 
-  vy: (Math.random() - 0.5) * 2,
+  vy: (Math.random() * 4 + 2),
 
-  size: 30 + Math.random() * 20
+  size: 40
 
 }));
 
-function draw() {
+function animate() {
+
+  // clear screen
 
   ctx.fillStyle = "black";
 
@@ -110,60 +106,58 @@ function draw() {
 
   ctx.fillStyle = "white";
 
-  for (let w of words) {
+  for (let i of items) {
 
-    ctx.font = `${w.size}px Arial`;
+    ctx.font = `${i.size}px Arial`;
 
-    ctx.fillText(w.text, w.x, w.y);
+    ctx.fillText(i.t, i.x, i.y);
 
-    w.x += w.vx;
+    i.x += i.vx;
 
-    w.y += w.vy;
+    i.y += i.vy;
 
-    if (w.x < 0 || w.x > canvas.width - 150) w.vx *= -1;
+    // bounce
 
-    if (w.y < 30 || w.y > canvas.height) w.vy *= -1;
+    if (i.x > canvas.width || i.x < 0) i.vx *= -1;
+
+    if (i.y > canvas.height || i.y < 0) i.vy *= -1;
 
   }
 
-  requestAnimationFrame(draw);
+  requestAnimationFrame(animate);
 
 }
 
-draw();
+animate();
 
-// ⏱️ idle dim logic
+/* ---------------- DIM AFTER 5 SECONDS ---------------- */
 
-let idleTimer;
+let timer;
 
-function resetIdle() {
+function reset() {
 
-  dim.style.opacity = 0; // bright again
+  dim.style.opacity = 0;
 
-  clearTimeout(idleTimer);
+  clearTimeout(timer);
 
-  idleTimer = setTimeout(() => {
+  timer = setTimeout(() => {
 
-    dim.style.opacity = 0.85; // 🔥 DIM SCREEN AFTER 5s
+    dim.style.opacity = 0.9; // dim screen
 
   }, 5000);
 
 }
 
-// user activity resets timer
+["mousemove","keydown","touchstart"].forEach(e =>
 
-["mousemove", "mousedown", "touchstart", "keydown"].forEach(evt => {
+  window.addEventListener(e, reset)
 
-  window.addEventListener(evt, resetIdle);
+);
 
-});
-
-// start timer immediately
-
-resetIdle();
+reset();
 
 </script>
 
 </body>
 
-</html
+</html>
