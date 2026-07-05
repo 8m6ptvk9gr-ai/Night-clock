@@ -1,113 +1,107 @@
 <script>
 
-const clock = document.getElementById("clock");
+document.addEventListener("DOMContentLoaded", () => {
 
-const colorPicker = document.getElementById("colorPicker");
+  const clock = document.getElementById("clock");
 
-const brightness = document.getElementById("brightness");
+  const colorPicker = document.getElementById("colorPicker");
 
-const controls = document.querySelector(".controls");
+  const brightness = document.getElementById("brightness");
 
-const body = document.body;
+  const controls = document.querySelector(".controls");
 
-let dimTimeout = null;
+  if (!clock || !colorPicker || !brightness || !controls) {
 
-let hideTimeout = null;
+    console.error("Missing required elements in HTML");
 
-// Clock update
+    return;
 
-function updateClock() {
+  }
 
-  const now = new Date();
+  let dimTimeout;
 
-  const h = String(now.getHours()).padStart(2, "0");
+  let hideTimeout;
 
-  const m = String(now.getMinutes()).padStart(2, "0");
+  function updateClock() {
 
-  clock.textContent = `${h}:${m}`;
+    const now = new Date();
 
-}
+    const h = String(now.getHours()).padStart(2, "0");
 
-// Neon style update
+    const m = String(now.getMinutes()).padStart(2, "0");
 
-function updateStyle() {
+    clock.textContent = `${h}:${m}`;
 
-  const color = colorPicker.value;
+  }
 
-  const bright = brightness.value;
+  function updateStyle() {
 
-  clock.style.color = color;
+    const color = colorPicker.value;
 
-  clock.style.textShadow = `0 0 25px ${color}`;
+    const bright = brightness.value;
 
-  clock.style.opacity = bright;
+    clock.style.color = color;
 
-}
+    clock.style.textShadow = `0 0 25px ${color}`;
 
-// Show controls briefly
+    clock.style.opacity = bright;
 
-function showControls() {
+  }
 
-  controls.classList.remove("hidden");
+  function showControls() {
 
-  clearTimeout(hideTimeout);
+    controls.classList.remove("hidden");
 
-  hideTimeout = setTimeout(() => {
+    clearTimeout(hideTimeout);
 
-    controls.classList.add("hidden");
+    hideTimeout = setTimeout(() => {
 
-  }, 2500);
+      controls.classList.add("hidden");
 
-}
+    }, 2500);
 
-// Dim quickly after 5 seconds of no interaction
+  }
 
-function resetDimTimer() {
+  function resetDimTimer() {
 
-  body.classList.remove("dim");
+    document.body.classList.remove("dim");
 
-  clearTimeout(dimTimeout);
+    clearTimeout(dimTimeout);
 
-  dimTimeout = setTimeout(() => {
+    dimTimeout = setTimeout(() => {
 
-    body.classList.add("dim");
+      document.body.classList.add("dim");
 
-  }, 5000); // 👈 YOUR REQUEST: 5 seconds
+    }, 5000);
 
-}
+  }
 
-// Single interaction handler
+  function interact() {
 
-function onInteraction() {
+    showControls();
+
+    resetDimTimer();
+
+  }
+
+  document.addEventListener("pointerdown", interact, { passive: true });
+
+  document.addEventListener("touchstart", interact, { passive: true });
+
+  colorPicker.addEventListener("input", updateStyle);
+
+  brightness.addEventListener("input", updateStyle);
+
+  setInterval(updateClock, 1000);
+
+  updateClock();
+
+  updateStyle();
 
   showControls();
 
   resetDimTimer();
 
-}
-
-// iPad-safe input handling
-
-document.addEventListener("pointerdown", onInteraction, { passive: true });
-
-document.addEventListener("touchstart", onInteraction, { passive: true });
-
-// UI inputs
-
-colorPicker.addEventListener("input", updateStyle);
-
-brightness.addEventListener("input", updateStyle);
-
-// Init
-
-setInterval(updateClock, 1000);
-
-updateClock();
-
-updateStyle();
-
-showControls();
-
-resetDimTimer();
+});
 
 </script>
