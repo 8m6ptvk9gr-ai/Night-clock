@@ -2,215 +2,271 @@ HTML
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
 
 <head>
 
-<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Night Clock</title>
 
-<title>Night Clock</title>
+  <style>
 
-<style>
+    html, body {
 
-html, body{
+      margin: 0;
 
-    margin:0;
+      height: 100%;
 
-    width:100%;
+      background: #000;
 
-    height:100%;
+      overflow: hidden;
 
-    overflow:hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
 
-    background:black;
+    }
 
-    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    body {
 
-}
+      display: flex;
 
-body{
+      justify-content: center;
 
-    display:flex;
+      align-items: center;
 
-    justify-content:center;
+      transition: background 1s ease;
 
-    align-items:center;
+    }
 
-    transition:opacity 1s;
+    /* StandBy-style layout */
 
-}
+    .container {
 
-.container{
+      text-align: center;
 
-    text-align:center;
+      transform: translateY(-2vh);
 
-}
+    }
 
-#clock{
+    #clock {
 
-    font-size:min(28vw,180px);
+      font-size: clamp(90px, 18vw, 180px);
 
-    font-weight:200;
+      font-weight: 300;
 
-    color:#00ffcc;
+      letter-spacing: 0.02em;
 
-    text-shadow:0 0 25px #00ffcc;
+      color: #00ffcc;
 
-    transition:opacity 1s,text-shadow 1s,color .5s;
+      text-shadow: 0 0 18px rgba(0, 255, 204, 0.35);
 
-}
+      transition: all 0.5s ease;
 
-.controls{
+    }
 
-    margin-top:40px;
+    .controls {
 
-    color:white;
+      margin-top: 30px;
 
-    transition:opacity .6s;
+      display: flex;
 
-}
+      flex-direction: column;
 
-.hidden{
+      gap: 12px;
 
-    opacity:0;
+      color: white;
 
-    pointer-events:none;
+      font-size: 13px;
 
-}
+      opacity: 1;
 
-input[type=range]{
+      transition: opacity 0.6s ease;
 
-    width:220px;
+      align-items: center;
 
-}
+    }
 
-</style>
+    /* Hidden controls (StandBy feel) */
+
+    .hidden {
+
+      opacity: 0;
+
+      pointer-events: none;
+
+    }
+
+    input[type="range"] {
+
+      width: 220px;
+
+      accent-color: #00ffcc;
+
+    }
+
+    input[type="color"] {
+
+      width: 60px;
+
+      height: 34px;
+
+      border: none;
+
+      background: none;
+
+    }
+
+    label {
+
+      opacity: 0.7;
+
+    }
+
+    /* Dim mode */
+
+    .dim #clock {
+
+      opacity: 0.25;
+
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+
+    }
+
+    .dim {
+
+      background: #000;
+
+    }
+
+  </style>
 
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
 
-<div id="clock"></div>
+    <div id="clock"></div>
 
-<div class="controls">
+    <div class="controls">
 
-<p>Colour</p>
+      <label>Colour</label>
 
-<input
+      <input type="color" id="colorPicker" value="#00ffcc">
 
-type="color"
+      <label>Brightness</label>
 
-id="colorPicker"
+      <input type="range" id="brightness" min="0.1" max="1" step="0.05" value="1">
 
-value="#00ffcc">
+    </div>
 
-<p>Brightness</p>
+  </div>
 
-<input
+  <script>
 
-type="range"
+    const clock = document.getElementById("clock");
 
-id="brightness"
+    const colorPicker = document.getElementById("colorPicker");
 
-min="0.2"
+    const brightness = document.getElementById("brightness");
 
-max="1"
+    const controls = document.querySelector(".controls");
 
-step="0.05"
+    const body = document.body;
 
-value="1">
+    let hideTimeout;
 
-</div>
+    let dimTimeout;
 
-</div>
+    function updateClock() {
 
-<script>
+      const now = new Date();
 
-const clock=document.getElementById("clock");
+      const h = String(now.getHours()).padStart(2, "0");
 
-const colour=document.getElementById("colorPicker");
+      const m = String(now.getMinutes()).padStart(2, "0");
 
-const brightness=document.getElementById("brightness");
+      clock.textContent = `${h}:${m}`;
 
-const controls=document.querySelector(".controls");
+    }
 
-let hideTimer;
+    function updateStyle() {
 
-let dimTimer;
+      const color = colorPicker.value;
 
-function updateClock(){
+      const bright = brightness.value;
 
-const now=new Date();
+      clock.style.color = color;
 
-const h=String(now.getHours()).padStart(2,"0");
+      clock.style.textShadow = `0 0 18px ${color}`;
 
-const m=String(now.getMinutes()).padStart(2,"0");
+      clock.style.opacity = bright;
 
-clock.textContent=`${h}:${m}`;
+    }
 
-}
+    // StandBy-style control reveal
 
-function applyStyle(){
+    function showControls() {
 
-clock.style.color=colour.value;
+      controls.classList.remove("hidden");
 
-clock.style.textShadow=`0 0 25px ${colour.value}`;
+      clearTimeout(hideTimeout);
 
-clock.style.opacity=brightness.value;
+      hideTimeout = setTimeout(() => {
 
-}
+        controls.classList.add("hidden");
 
-function showControls(){
+      }, 2500);
 
-controls.classList.remove("hidden");
+    }
 
-clearTimeout(hideTimer);
+    // Dim after inactivity
 
-hideTimer=setTimeout(()=>{
+    function resetDimTimer() {
 
-controls.classList.add("hidden");
+      body.classList.remove("dim");
 
-},2500);
+      clearTimeout(dimTimeout);
 
-}
+      dimTimeout = setTimeout(() => {
 
-function dimClock(){
+        body.classList.add("dim");
 
-clock.style.opacity=0.18;
+      }, 20000);
 
-}
+    }
 
-function wakeClock(){
+    function interaction() {
 
-applyStyle();
+      showControls();
 
-showControls();
+      resetDimTimer();
 
-clearTimeout(dimTimer);
+    }
 
-dimTimer=setTimeout(dimClock,5000);
+    // iPad-safe input handling
 
-}
+    document.addEventListener("pointerdown", interaction, { passive: true });
 
-colour.addEventListener("input",applyStyle);
+    document.addEventListener("touchstart", interaction, { passive: true });
 
-brightness.addEventListener("input",applyStyle);
+    colorPicker.addEventListener("input", updateStyle);
 
-document.addEventListener("pointerdown",wakeClock);
+    brightness.addEventListener("input", updateStyle);
 
-setInterval(updateClock,1000);
+    // init
 
-updateClock();
+    setInterval(updateClock, 1000);
 
-applyStyle();
+    updateClock();
 
-wakeClock();
+    updateStyle();
 
-</script>
+    showControls();
+
+    resetDimTimer();
+
+  </script>
 
 </body>
 
