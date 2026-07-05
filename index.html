@@ -2,160 +2,26 @@ HTML
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
 
-<head>
+<body style="background:black; color:white; font-size:30px;">
 
-<meta charset="UTF-8" />
-
-<title>Floating Screensaver</title>
-
-<style>
-
-  html, body {
-
-    margin: 0;
-
-    height: 100%;
-
-    overflow: hidden;
-
-    background: black;
-
-  }
-
-  canvas {
-
-    display: block;
-
-  }
-
-  #dim {
-
-    position: absolute;
-
-    inset: 0;
-
-    background: black;
-
-    opacity: 0;
-
-    transition: opacity 1s ease;
-
-    pointer-events: none;
-
-  }
-
-</style>
-
-</head>
-
-<body>
-
-<canvas id="c"></canvas>
-
-<div id="dim"></div>
+<div id="out">Waiting...</div>
 
 <script>
 
-// ✅ this now runs AFTER DOM exists
+let i = 0;
 
-alert("JS IS RUNNING");
+setInterval(() => {
 
-const canvas = document.getElementById("c");
+  i++;
 
-const ctx = canvas.getContext("2d");
+  document.getElementById("out").innerText = "Counter: " + i;
 
-const dim = document.getElementById("dim");
-
-function resize() {
-
-  canvas.width = window.innerWidth;
-
-  canvas.height = window.innerHeight;
-
-}
-
-window.addEventListener("resize", resize);
-
-resize();
-
-const text = "FLOATING TEXT";
-
-const items = text.split(" ").map(t => ({
-
-  t,
-
-  x: Math.random() * window.innerWidth,
-
-  y: Math.random() * window.innerHeight,
-
-  vx: (Math.random() * 4 + 2),
-
-  vy: (Math.random() * 4 + 2),
-
-  size: 40
-
-}));
-
-function animate() {
-
-  ctx.fillStyle = "black";
-
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "white";
-
-  for (let i of items) {
-
-    ctx.font = `${i.size}px Arial`;
-
-    ctx.fillText(i.t, i.x, i.y);
-
-    i.x += i.vx;
-
-    i.y += i.vy;
-
-    if (i.x > canvas.width || i.x < 0) i.vx *= -1;
-
-    if (i.y > canvas.height || i.y < 0) i.vy *= -1;
-
-  }
-
-  requestAnimationFrame(animate);
-
-}
-
-animate();
-
-// dim logic
-
-let timer;
-
-function reset() {
-
-  dim.style.opacity = 0;
-
-  clearTimeout(timer);
-
-  timer = setTimeout(() => {
-
-    dim.style.opacity = 0.9;
-
-  }, 5000);
-
-}
-
-["mousemove","keydown","touchstart"].forEach(e =>
-
-  window.addEventListener(e, reset)
-
-);
-
-reset();
+}, 500);
 
 </script>
 
 </body>
 
-</html
+</html>
